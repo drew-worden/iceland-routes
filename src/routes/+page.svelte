@@ -1,120 +1,70 @@
-<script lang="ts">
-	// Imports
-	import { onMount } from 'svelte';
-	import { PUBLIC_MAPBOX_TOKEN } from '$env/static/public';
-	import mapboxgl from 'mapbox-gl';
-	import landmannalaugarGeoJSON from '$lib/assets/landmannalaugar.json';
-
-	mapboxgl.accessToken = PUBLIC_MAPBOX_TOKEN;
-
-	let map;
-
-	// Lifecycle
-	onMount(() => {
-		mapboxgl.accessToken = PUBLIC_MAPBOX_TOKEN;
-		map = new mapboxgl.Map({
-			container: 'map', // Container ID
-			style: 'mapbox://styles/mapbox/satellite-streets-v12', // Style URL
-			center: [-19.060623, 63.990666], // Initial center based on the first point
-			zoom: 1, // Initial zoom
-			pitch: 60, // Tilt angle for 3D terrain
-			bearing: -17.6,
-			antialias: true, // Improve the rendering quality
-			interactive: false,
-			hash: false
-		});
-
-		map.on('load', () => {
-			map.addSource('mapbox-dem', {
-				type: 'raster-dem',
-				url: 'mapbox://mapbox.terrain-rgb',
-				tileSize: 512,
-				maxzoom: 14
-			});
-
-			map.setTerrain({ source: 'mapbox-dem', exaggeration: 1.5 });
-
-			map.addLayer({
-				id: 'sky',
-				type: 'sky',
-				paint: {
-					'sky-type': 'atmosphere',
-					'sky-atmosphere-sun': [0.0, 0.0],
-					'sky-atmosphere-sun-intensity': 15
-				}
-			});
-
-			// Start the animation
-			drawRoute();
-		});
-	});
-
-	function drawRoute() {
-		// Initialize the route source with an empty LineString
-		map.addSource('route', {
-			type: 'geojson',
-			data: {
-				type: 'Feature',
-				geometry: {
-					type: 'LineString',
-					coordinates: []
-				}
-			}
-		});
-
-		map.addLayer({
-			id: 'route',
-			type: 'line',
-			source: 'route',
-			layout: {
-				'line-join': 'round',
-				'line-cap': 'round'
-			},
-			paint: {
-				'line-color': '#FF0000',
-				'line-width': 8
-			}
-		});
-
-		animateRoute(landmannalaugarGeoJSON.features.map((feature) => feature.geometry.coordinates));
-	}
-
-	function animateRoute(coordinates) {
-		let i = 0;
-
-		function animate() {
-			if (i < coordinates.length) {
-				// Update the route with the next coordinate
-				const currentRoute = map.getSource('route')._data;
-				currentRoute.geometry.coordinates.push(coordinates[i]);
-				map.getSource('route').setData(currentRoute);
-
-				// Fly to the next point
-				map.flyTo({
-					center: coordinates[i],
-					zoom: 15,
-					speed: 2,
-					curve: 1,
-					easing: (t) => t,
-					essential: true
-				});
-
-				i++;
-				setTimeout(animate, 1); // Adjust the speed of animation
-			}
-		}
-
-		animate();
-	}
+<script>
+	// Import images or use URLs
+	import landmannalaugarImage from '$lib/assets/pexels-tomas-malik-793526-27245704.jpg';
+    import hornstrandirImage from '$lib/assets/pexels-jonathanschmer-2364402.jpg';
 </script>
 
-<div class="map" id="map"></div>
+<div class="landing-page">
+	<div class="card">
+		<img src={landmannalaugarImage} alt="Landmannalaugar" />
+		<div class="card-title">Landmannalaugar</div>
+		<a href="/landmannalaugar"></a>
+	</div>
+	<div class="card">
+		<img src={hornstrandirImage} alt="Hornstrandir" />
+		<div class="card-title">Hornstrandir</div>
+		<a href="/hornstrandir"></a>
+	</div>
+</div>
 
 <style>
-	.map {
+	.landing-page {
+		display: flex;
+		gap: 64px;
+		padding: 64px;
+		height: 100vh;
+		background-color: #f0f0f0;
+		font-family: 'Arial', sans-serif;
+	}
+
+	.card {
+		flex: 1;
+		position: relative;
+		border-radius: 10px;
+		overflow: hidden;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+		transition: transform 0.1s ease-in-out;
+	}
+
+	.card:hover {
+		transform: scale(1.05);
+	}
+
+	.card img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.card-title {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		background-color: rgba(0, 0, 0, 0.5);
+		color: white;
+		padding: 20px;
+		text-align: center;
+		font-size: 1.5rem;
+	}
+
+	.card a {
 		position: absolute;
 		top: 0;
+		left: 0;
+		right: 0;
 		bottom: 0;
-		width: 100%;
+		text-decoration: none;
+		color: inherit;
 	}
 </style>
