@@ -124,7 +124,7 @@
 				map.getSource('route').setData(currentRoute);
 
 				// Calculate the smoothed bearing over the next few points
-				const bearing = calculateSmoothedBearing(coordinates, i, 5); // Average over 5 points
+				const bearing = calculateSmoothedBearing(coordinates, i, 7); // Average over 5 points
 
 				// Incrementally adjust the camera to smoothly follow the route and turn to face the direction
 				const [lng, lat] = coordinates[i];
